@@ -16,7 +16,7 @@ class SearchResultVC: UIViewController {
     
     
     override func viewDidLoad() {
-        super.viewDidLoad()git statu
+        super.viewDidLoad()
         view.backgroundColor = .systemBackground
         configureTableView()
         configureSearchButton()
