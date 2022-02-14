@@ -29,7 +29,6 @@ class RadioVC: UIViewController {
     
     let searchTV: UITableView = SearchBarVC().tableView
     
-    
     let playButton = EZPlayButton(backgroundColor: .systemIndigo, title: "Play")
     var avPlayer: AVPlayer?
     var avPlayerItem: AVPlayerItem?
@@ -39,8 +38,6 @@ class RadioVC: UIViewController {
     
     var radioStations: [RadioStation] = []
     let radioStationExample = RadioStation(name: "Jap", urlResolved: "https://relay0.r-a-d.io/main.mp3", favicon: "", country: "Japan")
-    
-    var tempScope: String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -96,9 +93,11 @@ class RadioVC: UIViewController {
             historyButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: padding),
             
             favoritesButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -padding),
-            favoritesButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: padding),
-            
+            favoritesButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: padding)
         ])
+        
+        favoritesButton.addTarget(self, action: #selector(pushFavoritesVC), for: .touchUpInside)
+        historyButton.addTarget(self, action: #selector(pushHistoryVC), for: .touchUpInside)
         
     }
     
@@ -115,8 +114,15 @@ class RadioVC: UIViewController {
         
     }
     
+    @objc func pushFavoritesVC() {
+        let favoritesVC = FavoritesVC()
+        navigationController?.pushViewController(favoritesVC, animated: true)
+    }
     
-    
+    @objc func pushHistoryVC() {
+        let historyVC = HistoryVC()
+        navigationController?.pushViewController(historyVC, animated: true)
+    }
 }
 
 extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
