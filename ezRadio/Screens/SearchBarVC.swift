@@ -7,15 +7,16 @@
 
 import UIKit
 
+struct SearchBarData {
+    var countries: [String]
+    var languages: [String]
+    var tags: [String]
+}
+
 class SearchBarVC: UIViewController {
-  
-    var countries: [Country] = []
-    var languages: [Language] = []
-    var tags: [Tag] = []
-    
-    var searchCountry = [String]()
-    
-    let searchBar = UISearchBar()
+        
+    var model : SearchBarData = SearchBarData(countries: [], languages: [], tags: [])
+    var selectedScope : Int = 0
     
     lazy var tableView: UITableView = {
         let tv = UITableView()
@@ -32,88 +33,13 @@ class SearchBarVC: UIViewController {
         view.addSubview(tableView)
         tableView.frame = view.bounds
         
-        /*
-        if activeScope == "Country" {
-            getCountryList()
-        } else if activeScope == "Language" {
-            getLanguageList()
-        } else {
-            getTagList()
-        }
-        */
+        // sinpaş: tepede çağırınca crash
         
-        getCountryList()
+        
+        
+        
     }
-    
-    func getCountryList() {
-        
-        
-            NetworkManager.shared.getCountryList() { [weak self]
-                result in
-                
-                guard let self = self else { return }
-                
-                switch result {
-                case .success(let countries):
-                    self.countries.append(contentsOf: countries)
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        self.tableView.reloadData()
-                    }
-                    print(countries.description)
-                    
-                case .failure(let error):
-                    print(error)
-                }
-                
-            }
-        }
-    
-    func getLanguageList() {
-        
-        
-            NetworkManager.shared.getLanguageList() { [weak self]
-                result in
-                
-                guard let self = self else { return }
-                
-                switch result {
-                case .success(let languages):
-                    self.languages.append(contentsOf: languages)
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        self.tableView.reloadData()
-                    }
-                    
-                case .failure(let error):
-                    print(error)
-                }
-                
-            }
-        }
-    
-    func getTagList() {
-        
-        
-            NetworkManager.shared.getTagList() { [weak self]
-                result in
-                
-                guard let self = self else { return }
-                
-                switch result {
-                case .success(let tags):
-                    self.tags.append(contentsOf: tags)
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        self.tableView.reloadData()
-                    }
-                    
-                case .failure(let error):
-                    print(error)
-                }
-                
-            }
-        }
+
   
 }
 
@@ -121,46 +47,40 @@ extension SearchBarVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        /*
-        var activeScope = radioVC.tempScope
-        
-        if activeScope == "Country" {
-            return countries.count
-        } else if activeScope == "Language" {
-            return languages.count
-        } else {
-            return tags.count
+        switch selectedScope {
+        case 0:
+            return model.countries.count
+        case 1:
+            return model.languages.count
+        case 2:
+            return model.tags.count
+        default:
+            return 0
         }
-        */
-        
-        return countries.count
-        //return languages.count
-        //return tags.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+       
+        var cellArray : [String]?
         
-        /*
-        var activeScope = radioVC.tempScope
-        
-        if activeScope == "Country" {
-            getCountryList()
-            cell.textLabel?.text = countries[indexPath.row].name
-        } else if activeScope == "Language" {
-            getLanguageList()
-            cell.textLabel?.text = languages[indexPath.row].name
-        } else {
-            getTagList()
-            cell.textLabel?.text = tags[indexPath.row].name
+        switch selectedScope {
+        case 0:
+            cellArray = model.countries
+        case 1:
+            cellArray = model.languages
+        case 2:
+            cellArray = model.tags
+        default:
+            break
         }
-        */
- 
-        cell.textLabel?.text = countries[indexPath.row].name
-        //cell.textLabel?.text = languages[indexPath.row].name
-        //cell.textLabel?.text = tags[indexPath.row].name
+        
+        cell.textLabel?.text = cellArray?[indexPath.row]
 
         return cell
     }
-    
 }
+
+
+
+

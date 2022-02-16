@@ -11,24 +11,14 @@ import AVFoundation
 
 class RadioVC: UIViewController {
     
+    var countries: [Country] = []
+    var languages: [Language] = []
+    var tags: [Tag] = []
     
-    lazy var searchController: UISearchController = {
-        let s = UISearchController(searchResultsController: SearchBarVC())
-        
-        s.searchResultsUpdater = self
-        
-        s.obscuresBackgroundDuringPresentation = false
-        s.searchBar.enablesReturnKeyAutomatically = false
-        s.searchBar.placeholder = "Search stations by..."
-        s.searchBar.returnKeyType = UIReturnKeyType.done
-        s.searchBar.scopeButtonTitles = ["Country", "Language", "Tag"]
+    var countryDataTemp: [String] = []
+    let searchBarVC = SearchBarVC()
     
-        s.searchBar.delegate = self
-        return s
-    }()
-    
-    let searchTV: UITableView = SearchBarVC().tableView
-    
+    lazy var searchController = UISearchController(searchResultsController: searchBarVC)
     let playButton = EZPlayButton(backgroundColor: .systemIndigo, title: "Play")
     var avPlayer: AVPlayer?
     var avPlayerItem: AVPlayerItem?
@@ -46,14 +36,80 @@ class RadioVC: UIViewController {
         configureSearchController()
         configurePlayButton()
         configureSideButtons()
+        configureSearchController()
+        
+        // TODO: async - await ile refactor edilcek.
+        getCountryList()
+        getLanguageList()
+        getTagList()
+        
     }
     
-    func configureSearchController() {
+}
+
+extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
+    
+    func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
+        searchBarVC.selectedScope = selectedScope
+        searchBarVC.tableView.reloadData()
+    }
+    
+    
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        
+    }
+}
+
+
+// MARK: Button functions
+
+extension RadioVC {
+    @objc func startRadioButton() {
+        
+        //let urlString = "https://relay0.r-a-d.io/main.mp3"
+        let url = URL(string: radioStationExample.urlResolved)
+        print("playing radio: \(radioStationExample.name) with url: \(radioStationExample.urlResolved)")
+        
+        avPlayerItem = AVPlayerItem.init(url: url! as URL)
+        avPlayer = AVPlayer.init(playerItem: avPlayerItem)
+        avPlayer?.automaticallyWaitsToMinimizeStalling = false
+        avPlayer?.play()
+        
+    }
+    
+    @objc func pushFavoritesVC() {
+        let favoritesVC = FavoritesVC()
+        navigationController?.pushViewController(favoritesVC, animated: true)
+    }
+    
+    @objc func pushHistoryVC() {
+        let historyVC = HistoryVC()
+        navigationController?.pushViewController(historyVC, animated: true)
+    }
+}
+
+
+
+// MARK: Configure UI elements
+
+extension RadioVC {
+    
+    func configureSearchController(){
         
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
+        
+        searchController.searchResultsUpdater = self
+        
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.enablesReturnKeyAutomatically = false
+        searchController.searchBar.placeholder = "Search stations by..."
+        searchController.searchBar.returnKeyType = UIReturnKeyType.done
+        searchController.searchBar.scopeButtonTitles = ["Country", "Language", "Tag"]
+        
+        searchController.searchBar.delegate = self
     }
-    
     
     func configurePlayButton() {
         
@@ -100,49 +156,60 @@ class RadioVC: UIViewController {
         historyButton.addTarget(self, action: #selector(pushHistoryVC), for: .touchUpInside)
         
     }
-    
-    @objc func startRadioButton() {
-        
-        //let urlString = "https://relay0.r-a-d.io/main.mp3"
-        let url = URL(string: radioStationExample.urlResolved)
-        print("playing radio: \(radioStationExample.name) with url: \(radioStationExample.urlResolved)")
-        
-        avPlayerItem = AVPlayerItem.init(url: url! as URL)
-        avPlayer = AVPlayer.init(playerItem: avPlayerItem)
-        avPlayer?.automaticallyWaitsToMinimizeStalling = false
-        avPlayer?.play()
-        
-    }
-    
-    @objc func pushFavoritesVC() {
-        let favoritesVC = FavoritesVC()
-        navigationController?.pushViewController(favoritesVC, animated: true)
-    }
-    
-    @objc func pushHistoryVC() {
-        let historyVC = HistoryVC()
-        navigationController?.pushViewController(historyVC, animated: true)
-    }
 }
 
-extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
+// MARK: Network Calls
+
+extension RadioVC {
     
-    func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
-        //activeScope = selectedScope.description
+    
+    
+    func getCountryList() {
+        
+        NetworkManager.shared.getCountryList() { [weak self]
+            result in
+            
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let countries):
+                self.countries.append(contentsOf: countries)
+                self.searchBarVC.model.countries = self.countries.map {$0.name}
+            case .failure(let error):
+                print(error)
+            }
+        }
     }
     
+    func getLanguageList() {
+        NetworkManager.shared.getLanguageList() { [weak self]
+            result in
+            
+            guard let self = self else { return }
+            switch result {
+            case .success(let languages):
+                self.languages.append(contentsOf: languages)
+                self.searchBarVC.model.languages = self.languages.map {$0.name}
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
     
-    
-    func updateSearchResults(for searchController: UISearchController) {
-
+    func getTagList() {
+        
+        NetworkManager.shared.getTagList() { [weak self]
+            result in
+            
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let tags):
+                self.tags.append(contentsOf: tags)
+                self.searchBarVC.model.tags = self.tags.map {$0.name}
+            case .failure(let error):
+                print(error)
+            }
+        }
     }
 }
-
-
-
-//        let s = UISearchController(searchResultsController: SearchBarVC())
-//        if let searchBarVC = s.searchResultsController as? SearchBarVC {
-//            searchBarVC.countryArray
-//        }
-
-
