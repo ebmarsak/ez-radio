@@ -10,7 +10,10 @@ import UIKit
 class SearchBarVC: UIViewController {
         
     var model : SearchBarData = SearchBarData(countries: [], languages: [], tags: [])
+    var filteredData = SearchBarData(countries: [], languages: [], tags: [])
+    
     var selectedScope : Int = 0
+    var isSearchControllerActive : Bool = false
     
     lazy var tableView: UITableView = {
         let tv = UITableView()
@@ -36,11 +39,11 @@ extension SearchBarVC: UITableViewDelegate, UITableViewDataSource {
         
         switch selectedScope {
         case 0:
-            return model.countries.count
+            return filteredData.countries.count
         case 1:
-            return model.languages.count
+            return filteredData.languages.count
         case 2:
-            return model.tags.count
+            return filteredData.tags.count
         default:
             return 0
         }
@@ -53,11 +56,11 @@ extension SearchBarVC: UITableViewDelegate, UITableViewDataSource {
         
         switch selectedScope {
         case 0:
-            cellArray = model.countries
+            cellArray = filteredData.countries
         case 1:
-            cellArray = model.languages
+            cellArray = filteredData.languages
         case 2:
-            cellArray = model.tags
+            cellArray = filteredData.tags
         default:
             break
         }

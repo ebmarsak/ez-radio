@@ -15,11 +15,12 @@ class RadioVC: UIViewController {
     var languages: [Language] = []
     var tags: [Tag] = []
     
-    var countryDataTemp: [String] = []
+    
     let searchBarVC = SearchBarVC()
+    var filteredData2 = SearchBarData(countries: [], languages: [], tags: [])
     
     lazy var searchController = UISearchController(searchResultsController: searchBarVC)
-    //let playButton = EZPlayButton(backgroundColor: .systemIndigo, title: "Play")
+    
     let playButton = UIButton()
     var avPlayer: AVPlayer?
     var avPlayerItem: AVPlayerItem?
@@ -58,7 +59,47 @@ extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
     
     
     func updateSearchResults(for searchController: UISearchController) {
+        guard let searchText = searchController.searchBar.text else { return }
+        var selectedScope = searchController.searchBar.selectedScopeButtonIndex
         
+        filterSearchText(searchText: searchText, scopeButton: selectedScope)
+    }
+    
+    
+    func filterSearchText(searchText: String, scopeButton: Int) {
+        
+        switch scopeButton {
+        case 0:
+            searchBarVC.filteredData.countries = searchBarVC.model.countries.filter{
+                data in
+                if(searchText != "") {
+                    let searchTextMatch = data.lowercased().contains(searchText.lowercased())
+                    return searchTextMatch
+                } else { return false }
+            }
+            searchBarVC.tableView.reloadData()
+        case 1:
+            searchBarVC.filteredData.languages = searchBarVC.model.languages.filter{
+                data in
+                if(searchText != "") {
+                    let searchTextMatch = data.lowercased().contains(searchText.lowercased())
+                    return searchTextMatch
+                } else { return false }
+            }
+            searchBarVC.tableView.reloadData()
+        case 2:
+            searchBarVC.filteredData.tags = searchBarVC.model.tags.filter{
+                data in
+                if(searchText != "") {
+                    let searchTextMatch = data.lowercased().contains(searchText.lowercased())
+                    return searchTextMatch
+                } else { return false }
+            }
+            searchBarVC.tableView.reloadData()
+        default:
+            return
+        }
+          
     }
 }
 
@@ -107,6 +148,8 @@ extension RadioVC {
         searchController.searchBar.placeholder = "Search stations by..."
         searchController.searchBar.returnKeyType = UIReturnKeyType.done
         searchController.searchBar.scopeButtonTitles = ["Country", "Language", "Tag"]
+        
+        searchBarVC.isSearchControllerActive = !((searchController.searchBar.text?.isEmpty) != nil)
         
         searchController.searchBar.delegate = self
     }
