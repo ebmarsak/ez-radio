@@ -19,7 +19,8 @@ class RadioVC: UIViewController {
     let searchBarVC = SearchBarVC()
     
     lazy var searchController = UISearchController(searchResultsController: searchBarVC)
-    let playButton = EZPlayButton(backgroundColor: .systemIndigo, title: "Play")
+    //let playButton = EZPlayButton(backgroundColor: .systemIndigo, title: "Play")
+    let playButton = UIButton()
     var avPlayer: AVPlayer?
     var avPlayerItem: AVPlayerItem?
     
@@ -67,7 +68,6 @@ extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
 extension RadioVC {
     @objc func startRadioButton() {
         
-        //let urlString = "https://relay0.r-a-d.io/main.mp3"
         let url = URL(string: radioStationExample.urlResolved)
         print("playing radio: \(radioStationExample.name) with url: \(radioStationExample.urlResolved)")
         
@@ -115,6 +115,10 @@ extension RadioVC {
         
         view.addSubview(playButton)
         playButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        playButton.setTitle("Play", for: .normal)
+        playButton.backgroundColor = UIColor.systemBlue
+        playButton.layer.cornerRadius = 10
         
         playButton.addTarget(self, action: #selector(startRadioButton), for: .touchUpInside)
         

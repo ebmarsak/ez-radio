@@ -7,12 +7,6 @@
 
 import UIKit
 
-struct SearchBarData {
-    var countries: [String]
-    var languages: [String]
-    var tags: [String]
-}
-
 class SearchBarVC: UIViewController {
         
     var model : SearchBarData = SearchBarData(countries: [], languages: [], tags: [])
@@ -33,14 +27,7 @@ class SearchBarVC: UIViewController {
         view.addSubview(tableView)
         tableView.frame = view.bounds
         
-        // sinpaş: tepede çağırınca crash
-        
-        
-        
-        
     }
-
-  
 }
 
 extension SearchBarVC: UITableViewDelegate, UITableViewDataSource {
