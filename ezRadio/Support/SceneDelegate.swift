@@ -26,49 +26,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func createRadioNavigationController() -> UINavigationController {
         let radioVC = RadioVC()
         radioVC.title = "ez radio"
-        //radioVC.tabBarItem = UITabBarItem(title: "Radio", image: UIImage(systemName: "music.quarternote.3") , tag: 0)
         
         return UINavigationController(rootViewController: radioVC)
     }
-    
-   /*
-    func createFavoritesNavigationController() -> UINavigationController {
-        let favoritesVC = FavoritesVC()
-        favoritesVC.title = "Favorites"
-        favoritesVC.tabBarItem = UITabBarItem(title: "Favorites", image: UIImage(systemName: "heart.fill") , tag: 0)
-        
-        return UINavigationController(rootViewController: favoritesVC)
-    }
-    
-
-    
-    func createHistoryNavigationController() -> UINavigationController {
-        let historyVC = HistoryVC()
-        historyVC.title = "History"
-        historyVC.tabBarItem = UITabBarItem(title: "History", image: UIImage(systemName: "clock.fill") , tag: 0)
-        
-        return UINavigationController(rootViewController: historyVC)
-    }
-    
-    func createSearchNavigationController() -> UINavigationController {
-        let searchVC = SearchVC()
-        searchVC.title = "Search"
-        searchVC.tabBarItem = UITabBarItem(title: "Search", image: UIImage(systemName: "magnifyingglass"), tag: 0)
-        
-        return UINavigationController(rootViewController: searchVC)
-    }
-    
-    
-    
-    func createTabbar() -> UITabBarController {
-        let tabbar = UITabBarController()
-        UITabBar.appearance().tintColor = .systemPurple
-        
-        tabbar.viewControllers = [createHistoryNavigationController(), createRadioNavigationController(), createFavoritesNavigationController(), createSearchNavigationController()]
-        tabbar.selectedIndex = 1
-        return tabbar
-    }
-     */
     
 
     func sceneDidDisconnect(_ scene: UIScene) {

@@ -9,6 +9,8 @@ import UIKit
 
 class SearchResultVC: UIViewController {
     
+    var radioStations: [RadioStation] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground

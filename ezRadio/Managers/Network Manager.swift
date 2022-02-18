@@ -163,4 +163,53 @@ class NetworkManager {
     
     task.resume()
 }
+    
+    func getRadioStationsByChoice(forChoice choice: String, forScope scope: Int, completed: @escaping (Result<[RadioStation], EZError>) -> Void) {
+        
+        var endpoint: String
+        
+        switch scope {
+        case 0:
+            endpoint = baseURL + "stations/bycountry/\(choice)"
+        case 1:
+            endpoint = baseURL + "stations/bylanguage/\(choice)"
+        case 2:
+            endpoint = baseURL + "stations/bytag/\(choice)"
+        default:
+            return
+        }
+        
+        guard let url = URL(string: endpoint) else {
+            completed(.failure(.invalidName))
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+            
+            if let _ = error {
+                completed(.failure(.unableToComplete))
+            }
+            
+            guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+                completed(.failure(.unableToComplete))
+                return
+            }
+            
+            guard let data = data else {
+                completed(.failure(.invalidData))
+                return
+            }
+            
+            do {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                let radioStations = try decoder.decode([RadioStation].self, from: data)
+                completed(.success(radioStations))
+            } catch {
+                completed(.failure(.invalidData))
+            }
+        }
+        
+        task.resume()
+    }
 }

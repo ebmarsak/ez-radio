@@ -9,7 +9,7 @@ import UIKit
 import AVKit
 import AVFoundation
 
-class RadioVC: UIViewController {
+class RadioVC: UIViewController, SearchSelectionDelegate {
     
     var countries: [Country] = []
     var languages: [Language] = []
@@ -44,16 +44,41 @@ class RadioVC: UIViewController {
         getCountryList()
         getLanguageList()
         getTagList()
+        searchBarVC.searchSelectionDelegate = self
+        
         
     }
     
 }
 
 extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
+
     
     func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
         searchBarVC.selectedScope = selectedScope
         searchBarVC.tableView.reloadData()
+        
+    }
+    
+    func didTapCell(choice: String, scope: Int) {
+        
+        NetworkManager.shared.getRadioStationsByChoice(forChoice: choice, forScope: scope) { [weak self]
+            result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let radioStations):
+                DispatchQueue.main.async {
+                    self.radioStations.append(contentsOf: radioStations)
+                    let searchResultVC = SearchResultVC()
+                    searchResultVC.radioStations.append(contentsOf: radioStations)
+                    self.navigationController?.pushViewController(searchResultVC, animated: true)
+                    print(searchResultVC.radioStations)
+                }
+            case .failure(let error):
+                print(error)
+            }
+        }
     }
     
     
@@ -177,13 +202,15 @@ extension RadioVC {
     func configureSideButtons() {
         
         let padding : CGFloat = 20
+        let buttonSize: CGFloat = 32
         
-        favoritesButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
-        historyButton.setImage(UIImage(systemName: "clock.fill"), for: .normal)
+//        favoritesButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
+//        historyButton.setImage(UIImage(systemName: "clock.fill"), for: .normal)
+        
+        historyButton.setBackgroundImage(UIImage(systemName: "clock.fill"), for: .normal)
         
         favoritesButton.tintColor = .systemPink
         historyButton.tintColor = .systemBlue
-        
         
         view.addSubview(favoritesButton)
         view.addSubview(historyButton)
@@ -194,10 +221,27 @@ extension RadioVC {
         NSLayoutConstraint.activate([
             historyButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: padding),
             historyButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: padding),
-            
+
             favoritesButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -padding),
-            favoritesButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: padding)
+            favoritesButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: padding),
         ])
+        
+        
+        favoritesButton.widthAnchor.constraint(equalToConstant: buttonSize).isActive = true
+        favoritesButton.heightAnchor.constraint(equalToConstant: buttonSize).isActive = true
+        
+        historyButton.widthAnchor.constraint(equalToConstant: buttonSize).isActive = true
+        historyButton.heightAnchor.constraint(equalToConstant: buttonSize).isActive = true
+        
+        
+        favoritesButton.contentHorizontalAlignment = .fill
+        favoritesButton.contentVerticalAlignment = .fill
+        favoritesButton.imageView?.contentMode = .scaleAspectFit
+        
+        favoritesButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
+        
+        
+        
         
         favoritesButton.addTarget(self, action: #selector(pushFavoritesVC), for: .touchUpInside)
         historyButton.addTarget(self, action: #selector(pushHistoryVC), for: .touchUpInside)
@@ -259,4 +303,7 @@ extension RadioVC {
             }
         }
     }
+    
+   
 }
+

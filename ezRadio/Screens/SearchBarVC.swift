@@ -7,7 +7,13 @@
 
 import UIKit
 
+protocol SearchSelectionDelegate {
+    func didTapCell(choice: String, scope: Int)
+}
+
 class SearchBarVC: UIViewController {
+    
+    var searchSelectionDelegate: SearchSelectionDelegate!
         
     var model : SearchBarData = SearchBarData(countries: [], languages: [], tags: [])
     var filteredData = SearchBarData(countries: [], languages: [], tags: [])
@@ -69,7 +75,24 @@ extension SearchBarVC: UITableViewDelegate, UITableViewDataSource {
 
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let selectedText : String? = tableView.cellForRow(at: indexPath)?.textLabel?.text!
+        
+        searchSelectionDelegate.didTapCell(choice: selectedText!, scope: selectedScope)
+        
+        
+    }
+    
+    @objc func pushSearchResultVC() {
+        //let searchResultVC = SearchResultVC()
+        //show(searchResultVC, sender: self)
+    
+        //navigationController?.pushViewController(searchResultVC, animated: true)
+    }
 }
+
 
 
 
