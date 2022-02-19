@@ -29,7 +29,7 @@ class RadioVC: UIViewController, SearchSelectionDelegate {
     let historyButton = UIButton()
     
     var radioStations: [RadioStation] = []
-    let radioStationExample = RadioStation(name: "Jap", urlResolved: "https://relay0.r-a-d.io/main.mp3", favicon: "", country: "Japan")
+    let radioStationExample = RadioStation(name: "Jap", urlResolved: "https://relay0.r-a-d.io/main.mp3", favicon: "", tags: "", country: "Japan", language: "")
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -73,13 +73,15 @@ extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
                     let searchResultVC = SearchResultVC()
                     searchResultVC.radioStations.append(contentsOf: radioStations)
                     self.navigationController?.pushViewController(searchResultVC, animated: true)
-                    print(searchResultVC.radioStations)
+                    //print(searchResultVC.radioStations)
                 }
             case .failure(let error):
                 print(error)
             }
         }
     }
+    
+    
     
     
     
@@ -252,9 +254,7 @@ extension RadioVC {
 // MARK: Network Calls
 
 extension RadioVC {
-    
-    
-    
+
     func getCountryList() {
         
         NetworkManager.shared.getCountryList() { [weak self]

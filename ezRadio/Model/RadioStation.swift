@@ -18,13 +18,12 @@ struct RadioStation: Codable, Hashable {
     let urlResolved: String
     //let homepage: String?
     
-    let favicon: String?
-    //let tags: String?
+    let favicon: String
+    let tags: String?
     
     let country: String?
-    //let countrycode: String?
     //let state: String?
-    //let language: String?
+    let language: String?
     //let languagecodes: String?
     
     //let codec: String?

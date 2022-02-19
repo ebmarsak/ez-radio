@@ -83,13 +83,7 @@ extension SearchBarVC: UITableViewDelegate, UITableViewDataSource {
         searchSelectionDelegate.didTapCell(choice: selectedText!, scope: selectedScope)
         
         
-    }
-    
-    @objc func pushSearchResultVC() {
-        //let searchResultVC = SearchResultVC()
-        //show(searchResultVC, sender: self)
-    
-        //navigationController?.pushViewController(searchResultVC, animated: true)
+        
     }
 }
 
