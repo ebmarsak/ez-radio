@@ -164,6 +164,9 @@ class NetworkManager {
     task.resume()
 }
     
+//    closure
+//    completionHandler
+    
     func getRadioStationsByChoice(forChoice choice: String, forScope scope: Int, completed: @escaping (Result<[RadioStation], EZError>) -> Void) {
         
         var endpoint: String

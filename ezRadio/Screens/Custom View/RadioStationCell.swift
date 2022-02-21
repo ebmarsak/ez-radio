@@ -14,6 +14,8 @@ class RadioStationCell: UITableViewCell {
     var rsLanguage = UILabel()
     var rsTags = UILabel()
     var rsPlayButton = UIButton()
+    
+    var rsLanguageIcon = UIImageView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -22,7 +24,10 @@ class RadioStationCell: UITableViewCell {
         addSubview(rsRadioName)
         addSubview(rsLanguage)
         addSubview(rsTags)
-        addSubview(rsPlayButton)
+        addSubview(rsLanguageIcon)
+        contentView.addSubview(rsPlayButton)
+        
+        selectionStyle = .none
         
         configureSubviewProperties()
         componentConstraints()
@@ -50,7 +55,7 @@ class RadioStationCell: UITableViewCell {
         rsImageView.translatesAutoresizingMaskIntoConstraints = false
         rsImageView.layer.cornerRadius = 10
         rsImageView.clipsToBounds = true
-        rsImageView.image = UIImage(named: "TR")
+        rsImageView.image = UIImage(named: "RSPlaceholder")
         
         
         // Name
@@ -64,47 +69,65 @@ class RadioStationCell: UITableViewCell {
         // Language
         rsLanguage.translatesAutoresizingMaskIntoConstraints = false
         rsLanguage.text = "german, english"
-        rsLanguage.textAlignment = .left
-        rsLanguage.numberOfLines = 1
-        //rsLanguage.font = textLabel?.font.withSize(10)
+        rsLanguage.textAlignment = .center
+        rsLanguage.numberOfLines = 0
+        rsLanguage.lineBreakStrategy = .standard
+        
         
         // Tags
         rsTags.translatesAutoresizingMaskIntoConstraints = false
         rsTags.text = "jazz,pop,rock,indie"
         rsTags.textAlignment = .left
         rsTags.numberOfLines = 0
-        //rsTags.font = textLabel?.font.withSize(10)
+        rsTags.lineBreakStrategy = .standard
         
         // PlayButton
         rsPlayButton.translatesAutoresizingMaskIntoConstraints = false
         rsPlayButton.setBackgroundImage(UIImage(systemName: "play.circle"), for: .normal)
         
+        // Language Icon
+        rsLanguageIcon.translatesAutoresizingMaskIntoConstraints = false
+        rsLanguageIcon.image = UIImage(named: "message.and.waveform")
+        
+        
     }
     
     func componentConstraints() {
         let padding: CGFloat = 6
-        let buttonSize: CGFloat = 42
+        let buttonSize: CGFloat = 80
 
         NSLayoutConstraint.activate([
-            rsImageView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            rsImageView.topAnchor.constraint(equalTo: topAnchor, constant: 12),
             rsImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
             rsImageView.heightAnchor.constraint(equalToConstant: 120),
             rsImageView.widthAnchor.constraint(equalToConstant: 120),
             
-            rsRadioName.leadingAnchor.constraint(equalTo: rsImageView.trailingAnchor, constant: 15),
+            rsRadioName.leadingAnchor.constraint(equalTo: rsImageView.trailingAnchor, constant: 18),
+            rsRadioName.trailingAnchor.constraint(equalTo: trailingAnchor, constant: padding),
             rsRadioName.topAnchor.constraint(equalTo: rsImageView.topAnchor),
             
-            rsLanguage.leadingAnchor.constraint(equalTo: rsImageView.trailingAnchor, constant: 15),
-            rsLanguage.topAnchor.constraint(equalTo: rsRadioName.bottomAnchor, constant: padding),
+            rsLanguage.leadingAnchor.constraint(equalTo: rsImageView.leadingAnchor),
+            rsLanguage.topAnchor.constraint(equalTo: rsImageView.bottomAnchor, constant: padding),
+            rsLanguage.trailingAnchor.constraint(equalTo: rsImageView.trailingAnchor),
             
-            rsTags.leadingAnchor.constraint(equalTo: rsImageView.trailingAnchor, constant: 15),
-            rsTags.topAnchor.constraint(equalTo: rsLanguage.bottomAnchor, constant: padding),
+            rsTags.leadingAnchor.constraint(equalTo: rsImageView.trailingAnchor, constant: 18),
+            rsTags.topAnchor.constraint(equalTo: rsRadioName.bottomAnchor, constant: padding),
+            rsTags.trailingAnchor.constraint(equalTo: rsPlayButton.leadingAnchor, constant: -padding),
             
             rsPlayButton.centerYAnchor.constraint(equalTo: centerYAnchor),
             rsPlayButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
             rsPlayButton.widthAnchor.constraint(equalToConstant: buttonSize),
-            rsPlayButton.heightAnchor.constraint(equalToConstant: buttonSize)
+            rsPlayButton.heightAnchor.constraint(equalToConstant: buttonSize),
+            
+            rsLanguageIcon.topAnchor.constraint(equalTo: rsLanguage.bottomAnchor),
+            rsLanguageIcon.bottomAnchor.constraint(equalTo: bottomAnchor),
             
         ])
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        rsImageView.image = nil
     }
 }
