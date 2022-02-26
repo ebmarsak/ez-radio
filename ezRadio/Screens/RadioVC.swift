@@ -21,12 +21,16 @@ class RadioVC: UIViewController, SearchSelectionDelegate {
     
     lazy var searchController = UISearchController(searchResultsController: searchBarVC)
     
-    let playButton = UIButton()
     var avPlayer: AVPlayer?
     var avPlayerItem: AVPlayerItem?
     
     let favoritesButton = UIButton()
     let historyButton = UIButton()
+    
+    var playingRadioName = UILabel()
+    var playingRadioFavicon = UIImageView()
+    let playButton = UIButton()
+    let addToFavoritesButton = UIButton()
     
     var radioStations: [RadioStation] = []
     let radioStationExample = RadioStation(name: "Jap", urlResolved: "https://relay0.r-a-d.io/main.mp3", favicon: "", tags: "", country: "Japan", language: "")
@@ -36,8 +40,8 @@ class RadioVC: UIViewController, SearchSelectionDelegate {
         view.backgroundColor = .systemBackground
         
         configureSearchController()
-        configurePlayButton()
         configureSideButtons()
+        configurePlayingRadioElements()
         configureSearchController()
         
         // TODO: async - await ile refactor edilcek.
@@ -71,18 +75,15 @@ extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
                 DispatchQueue.main.async {
                     self.radioStations.append(contentsOf: radioStations)
                     let searchResultVC = SearchResultVC()
+                    searchResultVC.playRadioButtonDelegate = self
                     searchResultVC.radioStations.append(contentsOf: radioStations)
                     self.navigationController?.pushViewController(searchResultVC, animated: true)
-                    //print(searchResultVC.radioStations)
                 }
             case .failure(let error):
                 print(error)
             }
         }
     }
-    
-    
-    
     
     
     func updateSearchResults(for searchController: UISearchController) {
@@ -183,31 +184,13 @@ extension RadioVC {
     
     func configurePlayButton() {
         
-        view.addSubview(playButton)
-        playButton.translatesAutoresizingMaskIntoConstraints = false
         
-        playButton.setTitle("Play", for: .normal)
-        playButton.backgroundColor = UIColor.systemBlue
-        playButton.layer.cornerRadius = 10
-        
-        playButton.addTarget(self, action: #selector(startRadioButton), for: .touchUpInside)
-        
-        
-        NSLayoutConstraint.activate([
-            playButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 80),
-            playButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -80),
-            playButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            playButton.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
     }
     
     func configureSideButtons() {
         
         let padding : CGFloat = 20
         let buttonSize: CGFloat = 32
-        
-//        favoritesButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
-//        historyButton.setImage(UIImage(systemName: "clock.fill"), for: .normal)
         
         historyButton.setBackgroundImage(UIImage(systemName: "clock.fill"), for: .normal)
         
@@ -223,32 +206,77 @@ extension RadioVC {
         NSLayoutConstraint.activate([
             historyButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: padding),
             historyButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: padding),
-
+            historyButton.widthAnchor.constraint(equalToConstant: buttonSize),
+            historyButton.heightAnchor.constraint(equalToConstant: buttonSize),
+            
             favoritesButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -padding),
             favoritesButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: padding),
+            favoritesButton.widthAnchor.constraint(equalToConstant: buttonSize),
+            favoritesButton.heightAnchor.constraint(equalToConstant: buttonSize),
         ])
-        
-        
-        favoritesButton.widthAnchor.constraint(equalToConstant: buttonSize).isActive = true
-        favoritesButton.heightAnchor.constraint(equalToConstant: buttonSize).isActive = true
-        
-        historyButton.widthAnchor.constraint(equalToConstant: buttonSize).isActive = true
-        historyButton.heightAnchor.constraint(equalToConstant: buttonSize).isActive = true
-        
-        
+               
         favoritesButton.contentHorizontalAlignment = .fill
         favoritesButton.contentVerticalAlignment = .fill
         favoritesButton.imageView?.contentMode = .scaleAspectFit
         
         favoritesButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
-        
-        
-        
-        
+ 
         favoritesButton.addTarget(self, action: #selector(pushFavoritesVC), for: .touchUpInside)
         historyButton.addTarget(self, action: #selector(pushHistoryVC), for: .touchUpInside)
         
     }
+    
+    func configurePlayingRadioElements() {
+        
+        playingRadioFavicon.image = UIImage(named: "RSPlaceholder")
+        
+        playingRadioName.text = "Placeholder FM 100.1"
+        playingRadioName.textAlignment = .center
+        playingRadioName.numberOfLines = 3
+        
+        playButton.setTitle("Play", for: .normal)
+        playButton.backgroundColor = UIColor.systemBlue
+        playButton.layer.cornerRadius = 10
+        
+        addToFavoritesButton.setTitle("Add to Favorites", for: .normal)
+        addToFavoritesButton.backgroundColor = UIColor.systemRed
+        addToFavoritesButton.layer.cornerRadius = 10
+        
+        playingRadioFavicon.translatesAutoresizingMaskIntoConstraints = false
+        playingRadioName.translatesAutoresizingMaskIntoConstraints = false
+        playButton.translatesAutoresizingMaskIntoConstraints = false
+        addToFavoritesButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        playButton.addTarget(self, action: #selector(startRadioButton), for: .touchUpInside)
+        
+        view.addSubview(playingRadioFavicon)
+        view.addSubview(playingRadioName)
+        view.addSubview(playButton)
+        view.addSubview(addToFavoritesButton)
+        
+        NSLayoutConstraint.activate([
+            playingRadioFavicon.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120),
+            playingRadioFavicon.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            playingRadioFavicon.heightAnchor.constraint(equalToConstant: 90),
+            playingRadioFavicon.widthAnchor.constraint(equalToConstant: 90),
+            
+            playingRadioName.topAnchor.constraint(equalTo: playingRadioFavicon.bottomAnchor, constant: 10),
+            playingRadioName.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            playingRadioName.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            playingRadioName.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            playButton.topAnchor.constraint(equalTo: playingRadioName.bottomAnchor, constant: 20),
+            playButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 80),
+            playButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -80),
+            playButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            addToFavoritesButton.topAnchor.constraint(equalTo: playButton.bottomAnchor, constant: 10),
+            addToFavoritesButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 80),
+            addToFavoritesButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -80),
+            addToFavoritesButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+        ])
+    }
+    
 }
 
 // MARK: Network Calls
@@ -307,3 +335,10 @@ extension RadioVC {
    
 }
 
+extension RadioVC : PlayRadioButtonDelegate {
+    func didTapRSPlayButton (name: String, url: String, favicon: String) {
+        print(name)
+        print(url)
+        print(favicon)
+    }
+}

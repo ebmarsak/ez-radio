@@ -14,6 +14,8 @@ class RadioStationCell: UITableViewCell {
     var rsLanguage = UILabel()
     var rsTags = UILabel()
     var rsPlayButton = UIButton()
+    var currentRadioStation : RadioStation?
+    weak var playRadioButtonDelegate: PlayRadioButtonDelegate?
     
     var rsLanguageIcon = UIImageView()
 
@@ -47,6 +49,44 @@ class RadioStationCell: UITableViewCell {
         }
         
         dataTask.resume()
+    }
+    
+    func configure() {
+        guard let currentRadioStation = currentRadioStation else { return }
+        rsRadioName.text = currentRadioStation.name
+        
+        // Language info handling
+        if currentRadioStation.language == "" {
+            rsLanguage.text = "N/A"
+        } else {
+            
+            let trimmedLanguage = currentRadioStation.language?.trimAfterComma()
+            rsLanguage.text = trimmedLanguage?.capitalized
+        }
+        
+        // Tag info handling
+        
+        let modifiedTag = currentRadioStation.tags?.whitespaceAfterComma()
+        rsTags.text = modifiedTag
+        
+        // Image handling
+        fetchImage(url: currentRadioStation.favicon) { (image) in
+            guard let image = image else { return }
+            DispatchQueue.main.async { [weak self]
+                in
+                guard let self = self else { return }
+                self.rsImageView.image = image
+            }
+        }
+        
+        // Button handling
+        rsPlayButton.addTarget(self, action: #selector(callDelegate), for: .touchUpInside)
+        
+    }
+    
+    @objc func callDelegate() {
+        guard let currentRadioStation = currentRadioStation else { return }
+        playRadioButtonDelegate?.didTapRSPlayButton(name: currentRadioStation.name, url: currentRadioStation.urlResolved, favicon: currentRadioStation.favicon)
     }
     
     func configureSubviewProperties() {
@@ -129,5 +169,25 @@ class RadioStationCell: UITableViewCell {
         super.prepareForReuse()
         
         rsImageView.image = nil
+    }
+    
+    private func fetchImage(url: String, completion: @escaping (UIImage?) -> ())  {
+        
+        guard let url = URL(string: url) else {
+            completion(UIImage(named: "RSPlaceholder"))
+            return
+        }
+        
+        let getDataTask = URLSession.shared.dataTask(with: url) { (data, _, error) in
+            guard let data = data, error == nil else {
+                completion(UIImage(named: "RSPlaceholder"))
+                return
+            }
+           
+            completion(UIImage(data: data))
+
+        }
+        
+        getDataTask.resume()
     }
 }

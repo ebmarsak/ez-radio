@@ -7,8 +7,13 @@
 
 import UIKit
 
+protocol PlayRadioButtonDelegate : AnyObject {
+    func didTapRSPlayButton(name: String, url: String, favicon: String)
+}
+
 class SearchResultVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
+    weak var playRadioButtonDelegate: PlayRadioButtonDelegate?
     
     var radioStations: [RadioStation] = []
     
@@ -32,8 +37,7 @@ class SearchResultVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         tableView.register(RadioStationCell.self, forCellReuseIdentifier: "rsCell")
         
-        tableView.rowHeight = 170
-        
+        tableView.rowHeight = 200
     }
     
     // MARK: TableView functions
@@ -45,46 +49,20 @@ class SearchResultVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "rsCell", for: indexPath) as! RadioStationCell
-        let currentRadioStation = radioStations[indexPath.row]
-        
+        cell.currentRadioStation = radioStations[indexPath.row]
+        cell.playRadioButtonDelegate = self.playRadioButtonDelegate
+        cell.configure()
         cell.backgroundColor = indexPath.row % 2 == 0 ? .tertiarySystemBackground : .secondarySystemBackground
-        
-        cell.rsRadioName.text = currentRadioStation.name
-        
-        // Language info handling
-        if currentRadioStation.language == "" {
-            cell.rsLanguage.text = "N/A"
-        } else {
-            let trimmedLanguage = trimAfterComma(str: currentRadioStation.language!)
-            cell.rsLanguage.text = trimmedLanguage.capitalized
-        }
-        
-        // Tag info handling
-        let modifiedTag = whitespaceAfterComma(str: currentRadioStation.tags!)
-        cell.rsTags.text = modifiedTag
-        
-        // Image handling
-        fetchImage(url: currentRadioStation.favicon) { (image) in
-            guard let image = image else { return }
-            DispatchQueue.main.async {
-                cell.rsImageView.image = image
-            }
-        }
-        
-        // Button handling
-        cell.rsPlayButton.addTarget(self, action: #selector(didTapPlayButton), for: .touchUpInside)
         
         return cell
     }
+}
+
+
+extension String {
     
-    @objc func didTapPlayButton(){
-        print("cell play button tapped")
-    }
-    
-    // MARK: Cell component functions
-    
-    func trimAfterComma(str: String) -> String {
-        var tempStr: String = str
+    func trimAfterComma() -> String {
+        var tempStr: String = self
         
         if let commaRange = tempStr.range(of: ",") {
             tempStr.removeSubrange(commaRange.lowerBound..<tempStr.endIndex)
@@ -93,30 +71,8 @@ class SearchResultVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         return tempStr
     }
     
-    func whitespaceAfterComma(str: String) -> String {
-        let tempStr = str.replacingOccurrences(of: ",", with: ", ", options: .literal, range: nil)
+    func whitespaceAfterComma() -> String {
+        let tempStr = self.replacingOccurrences(of: ",", with: ", ", options: .literal, range: nil)
         return tempStr
     }
-    
-    private func fetchImage(url: String, completion: @escaping (UIImage?) -> ())  {
-        
-        guard let url = URL(string: url) else {
-            completion(UIImage(named: "RSPlaceholder"))
-            return
-        }
-        
-        let getDataTask = URLSession.shared.dataTask(with: url) { (data, _, error) in 
-            guard let data = data, error == nil else {
-                completion(UIImage(named: "RSPlaceholder"))
-                return
-            }
-           
-            completion(UIImage(data: data))
-
-        }
-        
-        getDataTask.resume()
-    }
-    
 }
-
