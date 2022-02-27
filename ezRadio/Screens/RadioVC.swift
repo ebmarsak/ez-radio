@@ -30,14 +30,15 @@ class RadioVC: UIViewController, SearchSelectionDelegate {
     var playingRadioName = UILabel()
     var playingRadioFavicon = UIImageView()
     let playButton = UIButton()
+    let stopButton = UIButton()
     let addToFavoritesButton = UIButton()
     
     var radioStations: [RadioStation] = []
-    let radioStationExample = RadioStation(name: "Jap", urlResolved: "https://relay0.r-a-d.io/main.mp3", favicon: "", tags: "", country: "Japan", language: "")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        avPlayer?.automaticallyWaitsToMinimizeStalling = false
         
         configureSearchController()
         configureSideButtons()
@@ -135,18 +136,6 @@ extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
 // MARK: Button functions
 
 extension RadioVC {
-    @objc func startRadioButton() {
-        
-        let url = URL(string: radioStationExample.urlResolved)
-        print("playing radio: \(radioStationExample.name) with url: \(radioStationExample.urlResolved)")
-        
-        avPlayerItem = AVPlayerItem.init(url: url! as URL)
-        avPlayer = AVPlayer.init(playerItem: avPlayerItem)
-        avPlayer?.automaticallyWaitsToMinimizeStalling = false
-        avPlayer?.play()
-        
-    }
-    
     @objc func pushFavoritesVC() {
         let favoritesVC = FavoritesVC()
         navigationController?.pushViewController(favoritesVC, animated: true)
@@ -182,10 +171,6 @@ extension RadioVC {
         searchController.searchBar.delegate = self
     }
     
-    func configurePlayButton() {
-        
-        
-    }
     
     func configureSideButtons() {
         
@@ -228,15 +213,29 @@ extension RadioVC {
     
     func configurePlayingRadioElements() {
         
-        playingRadioFavicon.image = UIImage(named: "RSPlaceholder")
+        view.addSubview(playingRadioFavicon)
+        view.addSubview(playingRadioName)
+        view.addSubview(playButton)
+        view.addSubview(stopButton)
+        view.addSubview(addToFavoritesButton)
         
-        playingRadioName.text = "Placeholder FM 100.1"
+        playingRadioFavicon.image = UIImage(named: "RSPlaceholder")
+        playingRadioFavicon.layer.borderWidth = 1
+        playingRadioFavicon.layer.borderColor = CGColor(red: 0, green: 0, blue: 1, alpha: 1)
+        //playingRadioFavicon.layer.cornerRadius = 8
+        
+        playingRadioName.text = "Use the search bar to find a radio!"
+        playingRadioName.font = UIFont.systemFont(ofSize: 20, weight: .medium)
         playingRadioName.textAlignment = .center
         playingRadioName.numberOfLines = 3
         
         playButton.setTitle("Play", for: .normal)
         playButton.backgroundColor = UIColor.systemBlue
         playButton.layer.cornerRadius = 10
+        
+        stopButton.setTitle("Stop", for: .normal)
+        stopButton.backgroundColor = UIColor.systemYellow
+        stopButton.layer.cornerRadius = 10
         
         addToFavoritesButton.setTitle("Add to Favorites", for: .normal)
         addToFavoritesButton.backgroundColor = UIColor.systemRed
@@ -245,24 +244,22 @@ extension RadioVC {
         playingRadioFavicon.translatesAutoresizingMaskIntoConstraints = false
         playingRadioName.translatesAutoresizingMaskIntoConstraints = false
         playButton.translatesAutoresizingMaskIntoConstraints = false
+        stopButton.translatesAutoresizingMaskIntoConstraints = false
         addToFavoritesButton.translatesAutoresizingMaskIntoConstraints = false
         
-        playButton.addTarget(self, action: #selector(startRadioButton), for: .touchUpInside)
+        //playButton.addTarget(self, action: #selector(startRadio), for: .touchUpInside)
+        stopButton.addTarget(self, action: #selector(stopRadio), for: .touchUpInside)
         
-        view.addSubview(playingRadioFavicon)
-        view.addSubview(playingRadioName)
-        view.addSubview(playButton)
-        view.addSubview(addToFavoritesButton)
         
         NSLayoutConstraint.activate([
             playingRadioFavicon.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120),
             playingRadioFavicon.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            playingRadioFavicon.heightAnchor.constraint(equalToConstant: 90),
-            playingRadioFavicon.widthAnchor.constraint(equalToConstant: 90),
+            playingRadioFavicon.heightAnchor.constraint(equalToConstant: 180),
+            playingRadioFavicon.widthAnchor.constraint(equalToConstant: 180),
             
             playingRadioName.topAnchor.constraint(equalTo: playingRadioFavicon.bottomAnchor, constant: 10),
-            playingRadioName.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            playingRadioName.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            playingRadioName.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 10),
+            playingRadioName.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -10),
             playingRadioName.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             playButton.topAnchor.constraint(equalTo: playingRadioName.bottomAnchor, constant: 20),
@@ -270,7 +267,12 @@ extension RadioVC {
             playButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -80),
             playButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            addToFavoritesButton.topAnchor.constraint(equalTo: playButton.bottomAnchor, constant: 10),
+            stopButton.topAnchor.constraint(equalTo: playButton.bottomAnchor, constant: 10),
+            stopButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 80),
+            stopButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -80),
+            stopButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            addToFavoritesButton.topAnchor.constraint(equalTo: stopButton.bottomAnchor, constant: 10),
             addToFavoritesButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 80),
             addToFavoritesButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -80),
             addToFavoritesButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -282,7 +284,7 @@ extension RadioVC {
 // MARK: Network Calls
 
 extension RadioVC {
-
+    
     func getCountryList() {
         
         NetworkManager.shared.getCountryList() { [weak self]
@@ -332,13 +334,76 @@ extension RadioVC {
         }
     }
     
-   
+    private func fetchImage(url: String, completion: @escaping (UIImage?) -> ())  {
+        
+        guard let url = URL(string: url) else {
+            completion(UIImage(named: "RSPlaceholder"))
+            return
+        }
+        
+        let getDataTask = URLSession.shared.dataTask(with: url) { (data, _, error) in
+            guard let data = data, error == nil else {
+                completion(UIImage(named: "RSPlaceholder"))
+                return
+            }
+           
+            completion(UIImage(data: data))
+
+        }
+        
+        getDataTask.resume()
+    }
 }
 
 extension RadioVC : PlayRadioButtonDelegate {
     func didTapRSPlayButton (name: String, url: String, favicon: String) {
-        print(name)
-        print(url)
-        print(favicon)
+        
+        // Radio name
+        playingRadioName.text = name
+        
+        // Image
+        fetchImage(url: favicon) { (image) in
+            guard let image = image else { return }
+            DispatchQueue.main.async { [weak self]
+                in
+                guard let self = self else { return }
+                self.playingRadioFavicon.image = image
+            }
+        }
+        
+        // Radio URL and Playing
+        //startRadio(name: name, streamUrl: url)
+        
+        if avPlayer?.currentItem == nil {
+            startRadio(name: name, streamUrl: url)
+        } else if avPlayer?.currentItem != nil {
+            replaceRadio(name: name, streamURL: url)
+        }
+    }
+    
+    func startRadio(name: String, streamUrl: String) {
+        let url = URL(string: streamUrl)
+        print("playing radio: \(name) with url: \(streamUrl)")
+        
+        avPlayerItem = AVPlayerItem.init(url: url! as URL)
+        avPlayer = AVPlayer.init(playerItem: avPlayerItem)
+        avPlayer?.play()
+    }
+    
+    func replaceRadio(name: String, streamURL: String) {
+        let url = URL(string: streamURL)
+        
+        print("replaced radio with: \(name) with url: \(streamURL)")
+
+        
+        avPlayerItem =  AVPlayerItem.init(url: url! as URL)
+        avPlayer?.replaceCurrentItem(with: avPlayerItem)
+        avPlayer?.play()
+    }
+    
+    @objc func stopRadio() {
+        avPlayer?.pause()
+        avPlayer?.rate = 0
+        print("stopped radio")
     }
 }
