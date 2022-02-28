@@ -51,25 +51,20 @@ class FavoritesVC: UIViewController, UITableViewDelegate, UITableViewDataSource 
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         favoritesTV.deselectRow(at: indexPath, animated: true)
-        let radioName = favoriteItems[indexPath.row].url
-        showAlert(message: radioName)
+        showAlert()
     }
     
-    func showAlert(message: String) {
+    func showAlert() {
         let alert = UIAlertController(title: "Favorites", message: "Play selected radio from favorites?", preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "Play", style: .default, handler: { action in
-            print("play tapped for \(message)")
+            print("play tapped")
         }))
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in
-            print("cancel tapped for \(message)")
+            print("cancel tapped")
         }))
         
         present(alert, animated: true)
-    }
-    
-    func addToFavorites() {
-        
     }
 }

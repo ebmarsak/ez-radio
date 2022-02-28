@@ -26,7 +26,6 @@ class HistoryVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                 print("failed to load radio history")
             }
         }
-        
         historyItems = historyItems.reversed()
     }
     
@@ -39,7 +38,6 @@ class HistoryVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         historyTV.frame = view.bounds
         historyTV.translatesAutoresizingMaskIntoConstraints = false
         historyTV.register(UITableViewCell.self, forCellReuseIdentifier: "historyCell")
-
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -55,19 +53,18 @@ class HistoryVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         historyTV.deselectRow(at: indexPath, animated: true)
-        let radioName = historyItems[indexPath.row].url
-        showAlert(message: radioName)
+        showAlert()
     }
     
-    func showAlert(message: String) {
+    func showAlert() {
         let alert = UIAlertController(title: "History", message: "Play selected radio from history?", preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "Play", style: .default, handler: { action in
-            print("play tapped for \(message)")
+            print("play tapped")
         }))
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in
-            print("cancel tapped for \(message)")
+            print("cancel tapped")
         }))
         
         present(alert, animated: true)

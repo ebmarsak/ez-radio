@@ -231,7 +231,7 @@ extension RadioVC {
         addToFavoritesButton.translatesAutoresizingMaskIntoConstraints = false
         
         stopButton.addTarget(self, action: #selector(stopRadio), for: .touchUpInside)
-        favoritesButton.addTarget(self, action: #selector(saveForFavorites), for: .touchUpInside)
+        addToFavoritesButton.addTarget(self, action: #selector(saveForFavorites), for: .touchUpInside)
         
         
         NSLayoutConstraint.activate([
