@@ -11,10 +11,13 @@ import AVFoundation
 
 class RadioVC: UIViewController, SearchSelectionDelegate {
     
+    var historyCache = [CacheRadio]()
+    var favoritesCache = [CacheRadio]()
+    var currenlyPlaying = CacheRadio(name: "null", url: "null", image: "null")
+    
     var countries: [Country] = []
     var languages: [Language] = []
     var tags: [Tag] = []
-    
     
     let searchBarVC = SearchBarVC()
     var filteredData2 = SearchBarData(countries: [], languages: [], tags: [])
@@ -23,6 +26,7 @@ class RadioVC: UIViewController, SearchSelectionDelegate {
     
     var avPlayer: AVPlayer?
     var avPlayerItem: AVPlayerItem?
+    var isRadioPlaying: Bool = false
     
     let favoritesButton = UIButton()
     let historyButton = UIButton()
@@ -50,15 +54,10 @@ class RadioVC: UIViewController, SearchSelectionDelegate {
         getLanguageList()
         getTagList()
         searchBarVC.searchSelectionDelegate = self
-        
-        
     }
-    
 }
 
 extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
-
-    
     func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
         searchBarVC.selectedScope = selectedScope
         searchBarVC.tableView.reloadData()
@@ -66,7 +65,6 @@ extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
     }
     
     func didTapCell(choice: String, scope: Int) {
-        
         NetworkManager.shared.getRadioStationsByChoice(forChoice: choice, forScope: scope) { [weak self]
             result in
             guard let self = self else { return }
@@ -128,13 +126,10 @@ extension RadioVC: UISearchResultsUpdating, UISearchBarDelegate {
         default:
             return
         }
-          
     }
 }
 
-
 // MARK: Button functions
-
 extension RadioVC {
     @objc func pushFavoritesVC() {
         let favoritesVC = FavoritesVC()
@@ -147,19 +142,14 @@ extension RadioVC {
     }
 }
 
-
-
 // MARK: Configure UI elements
-
 extension RadioVC {
-    
     func configureSearchController(){
         
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         
         searchController.searchResultsUpdater = self
-        
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.enablesReturnKeyAutomatically = false
         searchController.searchBar.placeholder = "Search stations by..."
@@ -167,7 +157,6 @@ extension RadioVC {
         searchController.searchBar.scopeButtonTitles = ["Country", "Language", "Tag"]
         
         searchBarVC.isSearchControllerActive = !((searchController.searchBar.text?.isEmpty) != nil)
-        
         searchController.searchBar.delegate = self
     }
     
@@ -176,11 +165,6 @@ extension RadioVC {
         
         let padding : CGFloat = 20
         let buttonSize: CGFloat = 32
-        
-        historyButton.setBackgroundImage(UIImage(systemName: "clock.fill"), for: .normal)
-        
-        favoritesButton.tintColor = .systemPink
-        historyButton.tintColor = .systemBlue
         
         view.addSubview(favoritesButton)
         view.addSubview(historyButton)
@@ -199,20 +183,20 @@ extension RadioVC {
             favoritesButton.widthAnchor.constraint(equalToConstant: buttonSize),
             favoritesButton.heightAnchor.constraint(equalToConstant: buttonSize),
         ])
-               
+        
+        favoritesButton.tintColor = .systemPink
+        historyButton.tintColor = .systemBlue
         favoritesButton.contentHorizontalAlignment = .fill
         favoritesButton.contentVerticalAlignment = .fill
         favoritesButton.imageView?.contentMode = .scaleAspectFit
-        
         favoritesButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
- 
+        historyButton.setBackgroundImage(UIImage(systemName: "clock.fill"), for: .normal)
+        
         favoritesButton.addTarget(self, action: #selector(pushFavoritesVC), for: .touchUpInside)
         historyButton.addTarget(self, action: #selector(pushHistoryVC), for: .touchUpInside)
-        
     }
     
     func configurePlayingRadioElements() {
-        
         view.addSubview(playingRadioFavicon)
         view.addSubview(playingRadioName)
         view.addSubview(playButton)
@@ -222,7 +206,6 @@ extension RadioVC {
         playingRadioFavicon.image = UIImage(named: "RSPlaceholder")
         playingRadioFavicon.layer.borderWidth = 1
         playingRadioFavicon.layer.borderColor = CGColor(red: 0, green: 0, blue: 1, alpha: 1)
-        //playingRadioFavicon.layer.cornerRadius = 8
         
         playingRadioName.text = "Use the search bar to find a radio!"
         playingRadioName.font = UIFont.systemFont(ofSize: 20, weight: .medium)
@@ -247,8 +230,8 @@ extension RadioVC {
         stopButton.translatesAutoresizingMaskIntoConstraints = false
         addToFavoritesButton.translatesAutoresizingMaskIntoConstraints = false
         
-        //playButton.addTarget(self, action: #selector(startRadio), for: .touchUpInside)
         stopButton.addTarget(self, action: #selector(stopRadio), for: .touchUpInside)
+        favoritesButton.addTarget(self, action: #selector(saveForFavorites), for: .touchUpInside)
         
         
         NSLayoutConstraint.activate([
@@ -286,10 +269,8 @@ extension RadioVC {
 extension RadioVC {
     
     func getCountryList() {
-        
         NetworkManager.shared.getCountryList() { [weak self]
             result in
-            
             guard let self = self else { return }
             
             switch result {
@@ -318,7 +299,6 @@ extension RadioVC {
     }
     
     func getTagList() {
-        
         NetworkManager.shared.getTagList() { [weak self]
             result in
             
@@ -335,7 +315,6 @@ extension RadioVC {
     }
     
     private func fetchImage(url: String, completion: @escaping (UIImage?) -> ())  {
-        
         guard let url = URL(string: url) else {
             completion(UIImage(named: "RSPlaceholder"))
             return
@@ -346,22 +325,20 @@ extension RadioVC {
                 completion(UIImage(named: "RSPlaceholder"))
                 return
             }
-           
             completion(UIImage(data: data))
-
         }
-        
         getDataTask.resume()
     }
 }
 
 extension RadioVC : PlayRadioButtonDelegate {
+    
     func didTapRSPlayButton (name: String, url: String, favicon: String) {
         
-        // Radio name
+        // Set station name
         playingRadioName.text = name
         
-        // Image
+        // Fetch station image
         fetchImage(url: favicon) { (image) in
             guard let image = image else { return }
             DispatchQueue.main.async { [weak self]
@@ -371,39 +348,69 @@ extension RadioVC : PlayRadioButtonDelegate {
             }
         }
         
-        // Radio URL and Playing
-        //startRadio(name: name, streamUrl: url)
-        
+        // Radio URL and Streaming
         if avPlayer?.currentItem == nil {
             startRadio(name: name, streamUrl: url)
         } else if avPlayer?.currentItem != nil {
             replaceRadio(name: name, streamURL: url)
         }
+        
+        // Caching for history
+        historyCache.append(CacheRadio(name: name, url: url, image: favicon))
+        saveForHistory()
+        
+        // Caching for favorites
+        currenlyPlaying.name = name
+        currenlyPlaying.image = favicon
+        currenlyPlaying.url = url
+    }
+    
+    func saveForHistory() {
+        let jsonEncoder = JSONEncoder()
+        if let historyData = try? jsonEncoder.encode(historyCache) {
+            UserDefaults.standard.set(historyData, forKey: "history")
+        } else {
+            print("failed to save radio data to history")
+        }
+    }
+    
+    @objc func saveForFavorites() {
+        favoritesCache.append(currenlyPlaying)
+        let jsonEncoder = JSONEncoder()
+        if let favoriteData = try? jsonEncoder.encode(favoritesCache) {
+            UserDefaults.standard.set(favoriteData, forKey: "favorites")
+        } else {
+            print("failed to save radio data to favorites")
+        }
     }
     
     func startRadio(name: String, streamUrl: String) {
         let url = URL(string: streamUrl)
-        print("playing radio: \(name) with url: \(streamUrl)")
-        
         avPlayerItem = AVPlayerItem.init(url: url! as URL)
         avPlayer = AVPlayer.init(playerItem: avPlayerItem)
         avPlayer?.play()
+        
+        isRadioPlaying = true
+        
+        print("playing radio: \(name) with url: \(streamUrl)")
     }
     
     func replaceRadio(name: String, streamURL: String) {
         let url = URL(string: streamURL)
-        
-        print("replaced radio with: \(name) with url: \(streamURL)")
-
-        
+        avPlayer?.pause()
         avPlayerItem =  AVPlayerItem.init(url: url! as URL)
         avPlayer?.replaceCurrentItem(with: avPlayerItem)
         avPlayer?.play()
+        
+        print("replaced radio with: \(name) with url: \(streamURL)")
     }
     
     @objc func stopRadio() {
         avPlayer?.pause()
         avPlayer?.rate = 0
+        
+        isRadioPlaying = false
+        
         print("stopped radio")
     }
 }

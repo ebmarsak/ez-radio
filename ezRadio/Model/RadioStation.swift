@@ -8,26 +8,13 @@
 import Foundation
 
 struct RadioStation: Codable, Hashable {
-    
-    //let changeuuid: String
-    //let stationuuid: String
-    
+       
     let name: String
-    
-    //let url: String
     let urlResolved: String
-    //let homepage: String?
-    
     let favicon: String
     let tags: String?
-    
     let country: String?
-    //let state: String?
     let language: String?
-    //let languagecodes: String?
-    
-    //let codec: String?
-    //let bitrate: Int?
     
 }
 
